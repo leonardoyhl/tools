@@ -1,12 +1,14 @@
 // ==UserScript==
 // @name         Catalogue for Confluence
 // @namespace    http://tampermonkey.net/
-// @version      2024-08-03
+// @version      2024-08-04
 // @description  为 Confluence 文档生成目录
-// @author       herin.yao
+// @author       leonardoyhl
 // @match        https://*.atlassian.net/wiki/*
 // @icon         https://wac-cdn.atlassian.com/misc-assets/webp-images/confluence-logo.svg
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=atlassian.net
+// @updateURL    https://github.com/leonardoyhl/tools/raw/main/tampermonkey/catalogue-for-confluence.user.js
+// @downloadURL  https://github.com/leonardoyhl/tools/raw/main/tampermonkey/catalogue-for-confluence.user.js
 // @grant        none
 // ==/UserScript==
 
