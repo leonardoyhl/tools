@@ -45,7 +45,8 @@
                 position: sticky;
                 // left: 4px;
                 top: 0px;
-                z-index: 1000;
+                /* 层级需低于 图片/附件预览 弹窗层级520 */
+                z-index: 400;
             }
             .catalogue.editing {
                 top: 100px;
