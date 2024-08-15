@@ -1,4 +1,4 @@
-# tools
+# Tools
 Some tools.
 
 ## Tampermonkey
