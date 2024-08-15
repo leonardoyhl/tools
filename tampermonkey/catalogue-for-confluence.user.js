@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Catalogue for Confluence
 // @namespace    http://tampermonkey.net/
-// @version      2024-08-04
+// @version      2024-08-15
 // @description  为 Confluence 文档生成目录
 // @author       leonardoyhl
 // @match        https://*.atlassian.net/wiki/*
