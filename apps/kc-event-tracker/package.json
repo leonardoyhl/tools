@@ -1,0 +1,28 @@
+{
+  "name": "kc-event-tracker",
+  "description": "Track and log event in KuCoin website",
+  "private": true,
+  "version": "0.0.1",
+  "type": "module",
+  "keywords": [
+    "event",
+    "track"
+  ],
+  "author": "herin.yao@kupotech.com",
+  "license": "MIT",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "preact": "10.22.0"
+  },
+  "devDependencies": {
+    "@preact/preset-vite": "^2.8.2",
+    "less": "^4.2.0",
+    "typescript": "^5.4.5",
+    "vite": "^5.2.12",
+    "vite-plugin-monkey": "^4.0.0"
+  }
+}

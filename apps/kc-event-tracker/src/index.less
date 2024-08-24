@@ -1,0 +1,136 @@
+#kc_event_tracker {
+  position: relative;
+  z-index: 100000;
+  font-size: 14px;
+  line-height: 1.3;
+  color: rgba(0, 0, 0, 0.65);
+
+  select, input {
+    outline: none;
+    border: 1px solid #8b8b8b;
+    border-radius: 4px;
+    padding: 2px 4px;
+    color: rgba(0, 0, 0, 0.65);
+  }
+
+  select {
+    cursor: pointer;
+  }
+
+  input {
+    width: 200px;
+    cursor: text;
+  }
+
+  .kcet-switch {
+    color: #fff;
+    background-color: #01bc8d;
+    border: none;
+    padding: 6px 8px;
+    border-radius: 4px;
+    position: fixed;
+    right: 0;
+    bottom: 60px;
+    cursor: pointer;
+  }
+
+  .kcet-close,
+  .kcet-expand,
+  .kcet-collapse {
+    position: absolute;
+    top: 6px;
+    right: 2px;
+    cursor: pointer;
+  }
+
+  .kcet-expand,
+  .kcet-collapse {
+    top: 50%;
+    right: -4px;
+    transform: translateY(-50%);
+  }
+
+  .kcet-clear {
+    cursor: pointer;
+  }
+
+  .kcet-drag-line {
+    position: absolute;
+    top: -4px;
+    width: 100%;
+    height: 2px;
+    border-top: 3px solid transparent;
+    border-bottom: 3px solid transparent;
+    box-sizing: content-box;
+    cursor: ns-resize;
+
+    &:hover,
+    &.dragging {
+      background-color: #01bc8d;
+    }
+  }
+
+  .kcet-panel {
+    position: fixed;
+    width: 100%;
+    height: 500px;
+    bottom: 0;
+    background-color: #fff;
+    border-top: 1px solid #c5c5c5;
+  }
+
+  .kcet-form {
+    padding: 6px;
+    border-bottom: 1px solid #c5c5c5;
+  }
+
+  .kcet-form-item {
+    margin-right: 12px;
+  }
+  
+  .kcet-form-item,
+  .kcet-clear {
+    vertical-align: middle;
+  }
+
+  .kcet-event-list {
+    height: calc(100% - 33px);
+    overflow-y: auto;
+  }
+
+  .kcet-event-item {
+    padding: 6px;
+    border-bottom: 1px solid #e3e3e3;
+
+    .summary {
+      display: flex;
+      align-items: baseline;
+      position: relative;
+      cursor: pointer;
+
+      .col {
+        margin-right: 8px;
+      }
+
+      .event {
+        min-width: 150px;
+      }
+
+      .page_id {
+        min-width: 180px;
+      }
+    }
+
+    .detail {
+      padding-left: 2em;
+      
+      pre {
+        background-color: #efefef;
+      }
+    }
+
+    .highlight {
+      background-color: #ABF5D1;
+    }
+  }
+}
