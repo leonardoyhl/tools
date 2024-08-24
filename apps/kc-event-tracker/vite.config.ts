@@ -22,14 +22,10 @@ export default defineConfig({
       entry: 'src/main.tsx',
       userscript: {
         name: 'KuCoin Event Tracker',
-        // icon: 'https://vitejs.dev/logo.svg',
         icon: 'https://www.google.com/s2/favicons?sz=64&domain=kucoin.com',
-        // namespace: 'npm/vite-plugin-monkey',
         namespace: 'kucoin',
         match: [
-          // 'https://www.google.com/',
           'https://www.kucoin.com/*',
-          // 'https://nginx-web-*.kucoin.net/*',
           'https://*.dev.kucoin.net/*',
           'https://*.sit.kucoin.net/*',
           'http://localhost*',

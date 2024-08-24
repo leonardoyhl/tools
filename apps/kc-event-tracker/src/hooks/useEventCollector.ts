@@ -87,7 +87,6 @@ export default function useEventCollector(panelVisible: boolean) {
             setDatas((datas) => [obj, ...datas]);
           }
         } catch (e) {
-          // do nothing
           console.error('[KCET] decodeTrackData error:', e);
         }
       }
