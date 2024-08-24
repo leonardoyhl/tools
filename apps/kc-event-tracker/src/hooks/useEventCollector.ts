@@ -48,8 +48,6 @@ function isTrackEvent(data: any): data is EventItem {
 
 const originalSendBeacon = navigator.sendBeacon;
 
-// const originalLog = console.log;
-
 /**
  * 通过劫持 API 收集埋点数据
  */
@@ -64,11 +62,6 @@ export default function useEventCollector(panelVisible: boolean) {
 
   // 劫持 navigator.sendBeacon 版本
   useEffect(() => {
-    // if (!panelVisible) {
-    //   // setDatas([]);
-    //   return;
-    // }
-
     navigator.sendBeacon = (url, data, ...rest) => {
       const result = originalSendBeacon.call(navigator, url, data, ...rest);
       if (typeof url === 'string' && url.startsWith('https://bigdata-scfx-push.kucoin.plus/sa.gif') && typeof data === 'string') {
@@ -98,42 +91,6 @@ export default function useEventCollector(panelVisible: boolean) {
       navigator.sendBeacon = originalSendBeacon;
     };
   }, []);
-
-  // 劫持 consol.log 版本
-  // useEffect(() => {
-  //   if (!panelVisible) {
-  //     setDatas([]);
-  //     return;
-  //   }
-
-  //   // 重写 console.log API 接收收集log
-  //   console.log = (...args) => {
-  //     originalLog.apply(console, args);
-  //     if (args.length === 1 && typeof args[0] === 'string') {
-  //       try {
-  //         const data: EventItem = JSON.parse(args[0]);
-  //         if (typeof data === 'object' && '_track_id' in data && 'event' in data && 'properties' in data) {
-  //           const { type, event } = data;
-  //           setTypes((types) => {
-  //             if (!type || types.includes(type)) return types;
-  //             return [...types, type];
-  //           });
-  //           setCategories((categories) => {
-  //             if (!event || categories.includes(event)) return categories;
-  //             return [...categories, event];
-  //           });
-  //           setDatas((datas) => [data, ...datas]);
-  //         }
-  //       } catch (e) {
-  //         // do nothing
-  //       }
-  //     }
-  //   };
-
-  //   return () => {
-  //     console.log = originalLog;
-  //   };
-  // }, [panelVisible]);
 
   return {
     datas,
