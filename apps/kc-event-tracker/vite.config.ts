@@ -33,6 +33,8 @@ export default defineConfig({
         // 在正式环境 www.kucoin.com 中执行时，document.body 为 null，会导致报错，Event Tracker 无法正常渲染
         // 'run-at': 'document-start',
         grant: 'none',
+        updateURL: 'https://bitbucket.kucoin.net/users/herin.yao_kupotech.com/repos/tools/raw/tampermonkey/kc-event-tracker.user.js',
+        downloadURL: 'https://bitbucket.kucoin.net/users/herin.yao_kupotech.com/repos/tools/raw/tampermonkey/kc-event-tracker.user.js',
       },
       build: {
         // fileName: 'kc-event-tracker.user.js',

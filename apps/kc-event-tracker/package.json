@@ -12,7 +12,7 @@
   "license": "MIT",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
+    "build": "tsc && vite build && mv dist/kc-event-tracker.user.js ../../tampermonkey/",
     "preview": "vite preview"
   },
   "dependencies": {
