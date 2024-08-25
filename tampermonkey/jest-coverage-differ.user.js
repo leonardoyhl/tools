@@ -23,7 +23,7 @@
     'use strict';
     console.log('---------- Jest Coverage Differ ----------');
 
-    const projects = [
+    let projects = [
         'marketing-growth-web',
         'public-web',
     ];
@@ -42,6 +42,16 @@
             coverage: JSON.parse(coverage.coverage),
             coverage_detail: JSON.parse(coverage.coverage_detail),
         };
+    }
+
+    async function getProjects() {
+        const url = 'https://check-web-node.sit.kucoin.net/api/test/query-records?branch=master';
+        const r = await GM.xmlHttpRequest({ url });
+        const res = JSON.parse(r.responseText);
+        if (res.status !== 200 || !res.data || res.data.length < 1) {
+            return;
+        }
+        return res.data.map(item => item.project);
     }
 
     function isOnlineSite() {
@@ -201,6 +211,8 @@
         // 线上 master 分支覆盖率页面不需要生成对比数据
         if (branch === 'master') return;
     } else {
+        const  allProjects = await getProjects();
+        if (allProjects) projects = allProjects;
         // 本地场景不清楚项目，需要用户手动选择
         createProjectSelect(project);
     }
