@@ -103,7 +103,8 @@
         const pctDiff = pct - coverage.pct;
         // 覆盖率下降标红，否则标绿
         const color = pctDiff < 0 ? '#c21f39' : '#4d9221';
-        el.firstElementChild.insertAdjacentHTML('afterend', `<span class="strong" style="color: ${color};">(${coverage.pct}%, ${pctDiff.toFixed(2)}%)</span>`);
+        const pctDiffText = pctDiff <= 0 ? pctDiff.toFixed(2) : `+${pctDiff.toFixed(2)}`;
+        el.firstElementChild.insertAdjacentHTML('afterend', `<span class="strong" style="color: ${color};">(${coverage.pct}%, ${pctDiffText}%)</span>`);
         el.lastElementChild.insertAdjacentHTML('afterend', `<span class="fraction" style="color: ${color}; margin-left: 2px;">(${coverage.covered}/${coverage.total})</span>`);
     }
 
