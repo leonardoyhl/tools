@@ -10,7 +10,9 @@
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=jestjs.io
 // @updateURL    https://github.com/leonardoyhl/tools/raw/main/tampermonkey/jest-coverage-differ.user.js
 // @downloadURL  https://github.com/leonardoyhl/tools/raw/main/tampermonkey/jest-coverage-differ.user.js
-// @grant        none
+// @connect      check-web-node.sit.kucoin.net
+// @grant        GM_xmlhttpRequest
+// @grant        GM.xmlHttpRequest
 // ==/UserScript==
 
 /**
@@ -29,10 +31,8 @@
     async function getTargetBranchCoverage(project, branch = 'master') {
         // https://check-web-node.sit.kucoin.net/api/test/query-detail?branch=master&project=marketing-growth-web
         const url = `https://check-web-node.sit.kucoin.net/api/test/query-detail?project=${project}&branch=${branch}`;
-        const res = await fetch(url, {
-            method: 'GET',
-            mode: 'cors',
-        }).then(res => res.json());
+        const r = await GM.xmlHttpRequest({ url });
+        const res = JSON.parse(r.responseText);
         if (res.status !== 200 || !res.data || res.data.length < 1) {
             return;
         }
