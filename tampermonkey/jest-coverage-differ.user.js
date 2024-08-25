@@ -64,10 +64,11 @@
 
     function getBaseInfo() {
         if (isOnlineSite()) {
-            const branchEl = document.querySelector('.pad1 p .quiet').nextElementSibling;
-            const project = branchEl.previousSibling.textContent.trim();
-            const branch = branchEl.parentElement.lastChild.textContent.trim();
-            return { project, branch };
+            const text = document.querySelector('.pad1 p .quiet')?.parentElement?.innerText || '';
+            const matchResult = text.match(/Project\:\s*(.+)Branch\:\s*(.+)/);
+            if (!matchResult) return { project: text.trim(), branch: null };
+            const [_, project, branch] = matchResult;
+            return { project: project.trim(), branch: branch.trim() };
         }
         const project = localStorage.getItem('project') || projects[0];
         return { project, branch: null };
