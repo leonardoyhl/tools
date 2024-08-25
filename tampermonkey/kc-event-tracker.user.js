@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         KuCoin Event Tracker
 // @namespace    kucoin
-// @version      0.0.1
+// @version      0.0.2
 // @author       herin.yao@kupotech.com
 // @description  Track and log event in KuCoin website
 // @license      MIT
@@ -64,20 +64,23 @@
     });
   }
   function HighlightSearchText({ text, search }) {
-    if (!(text == null ? void 0 : text.includes(search)) || !search) return /* @__PURE__ */ u(preact.Fragment, { children: text });
     const fragments = hooks.useMemo(() => {
+      if (!text || !search) return [[text, false]];
       const fragments2 = [];
       let str = text;
-      let endIdx = str.indexOf(search);
+      let lstr = str.toLowerCase();
+      const lsearch = search.toLowerCase();
+      let endIdx = lstr.indexOf(lsearch);
       while (endIdx >= 0 && endIdx < str.length) {
-        fragments2.push(str.substring(0, endIdx), str.substring(endIdx, endIdx + search.length));
+        fragments2.push([str.substring(0, endIdx), false], [str.substring(endIdx, endIdx + search.length), true]);
         str = str.substring(endIdx + search.length);
-        endIdx = str.indexOf(search);
+        lstr = lstr.substring(endIdx + search.length);
+        endIdx = lstr.indexOf(lsearch);
       }
-      fragments2.push(str);
+      fragments2.push([str, false]);
       return fragments2.filter(Boolean);
     }, [text, search]);
-    return /* @__PURE__ */ u(preact.Fragment, { children: fragments.map((item, idx) => item === search ? /* @__PURE__ */ u("span", { class: "highlight", children: item }, idx) : item) });
+    return /* @__PURE__ */ u(preact.Fragment, { children: fragments.map(([item, matched], idx) => matched ? /* @__PURE__ */ u("span", { class: "highlight", children: item }, idx) : item) });
   }
   function EventItemView(props) {
     var _a, _b;
@@ -208,6 +211,14 @@
     if (endIdx < 0 || str.length <= startIdx) return null;
     str = str.substring(startIdx, endIdx);
     str = atob(decodeURIComponent(str));
+    str = Array.prototype.map.call(str, function(c) {
+      const code = c.charCodeAt(0);
+      if ([33, 45, 46, 95, 126].includes(code) || code >= 39 && code <= 42 || code >= 48 && code <= 57 || code >= 65 && code <= 90 || code >= 97 && code <= 122) {
+        return c;
+      }
+      return "%" + ("00" + code.toString(16)).slice(-2);
+    }).join("");
+    str = decodeURIComponent(str);
     return JSON.parse(str);
   }
   function isTrackEvent(data) {
