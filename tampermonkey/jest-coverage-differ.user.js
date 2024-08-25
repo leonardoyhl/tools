@@ -151,27 +151,12 @@
         const basePath = getBasePath();
         coverage = !basePath ? coverage : coverage_detail[basePath];
         if (!coverage) return;
-        // const summaryEl = document.querySelector('.pad1 .clearfix');
-        // const [statementEl, branchEl, functionEl, lineEl] = Array.from(document.querySelectorAll('.pad1 .clearfix .fl'));
-        // const coverageEls = Array.from(document.querySelectorAll('.pad1 .clearfix .fl'));
-        // const coverages = [coverage.statements, coverage.branches, coverage.functions, coverage.lines, coverage.branchesTrue];
-        // coverageEls.forEach((item, idx) => {
-        //     addDiffInfo(item, coverages[idx]);
-        // });
         const coverageEls = Array.from(document.querySelectorAll('.pad1 .clearfix .fl'));
         coverageEls.forEach((item, idx) => {
             /** @type {string} */
             let coverageType = item.querySelector('.quiet').innerText.trim();
             coverageType = coverageType.substring(0, 1).toLowerCase() + coverageType.substring(1);
             addDiffInfo(item, coverage[coverageType]);
-        });
-    }
-
-    function addFileDiffInfo(cols, colIdxMap, coverage) {
-        ['Statements', 'Branches', 'Functions', 'Lines'].forEach(coverageType => {
-            const lcoverageType = coverageType.substring(0, 1).toLowerCase() + coverageType.substring(1);
-            if (!coverage[lcoverageType]) return;
-            addColDiffInfo(cols[colIdxMap[coverageType]], coverage[lcoverageType]);
         });
     }
 
@@ -199,23 +184,15 @@
         rows.forEach(row => {
             const cols = row.querySelectorAll('td');
             const fileCol = cols[colIdxMap['File']];
-            // const statementPctCol = cols[colIdxMap['Statements']];
-            // const branchPctCol = cols[colIdxMap['Branches']];
-            // const functionPctCol = cols[colIdxMap['Functions']];
-            // const linePctCol = cols[colIdxMap['Lines']];
             const subPath = fileCol.innerText.trim();
-            // const path = !basePath ? fileCol.innerText.trim() : `${basePath}/${fileCol.innerText.trim()}`;
-            // const coverage = coverage_detail[path];
             const coverage = !basePath ? coverage_detail[subPath] : coverage_detail[basePath]?.childs?.find(item => {
-                // const pathes = Object.entries(item).find(([key, value]) => key === subPath);
                 return Object.keys(item).some(key => key === subPath);
             })?.[subPath];
             if (!coverage) return;
-            // const statementPct = Number(statementPctCol.innerText.trim().substring(0, statementPctCol.innerText.trim().length - 1));
-            // const branchPct = Number(branchPctCol.innerText.trim().substring(0, branchPctCol.innerText.trim().length - 1));
-            // const functionPct = Number(functionPctCol.innerText.trim().substring(0, functionPctCol.innerText.trim().length - 1));
-            // const linePct = Number(linePctCol.innerText.trim().substring(0, linePctCol.innerText.trim().length - 1));
-            addFileDiffInfo(cols, colIdxMap, coverage);
+            addColDiffInfo(cols[colIdxMap['Statements']], coverage['statements']);
+            addColDiffInfo(cols[colIdxMap['Branches']], coverage['branches']);
+            addColDiffInfo(cols[colIdxMap['Functions']], coverage['functions']);
+            addColDiffInfo(cols[colIdxMap['Lines']], coverage['lines']);
         });
     }
 
@@ -227,11 +204,9 @@
         // 本地场景不清楚项目，需要用户手动选择
         createProjectSelect(project);
     }
-    // getTargetBranchCoverage('marketing-growth-web').then(console.log);
     const info = await getTargetBranchCoverage(project);
     console.log(info);
     const { coverage, coverage_detail } = info;
-    const titleEl = document.querySelector('.pad1 h1');
     if (isOnlineSite()) {
         await waitForSelector('.pad1 .clearfix .fl');
         listenHistoryChange(() => {
