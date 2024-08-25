@@ -1,15 +1,15 @@
 // ==UserScript==
 // @name         Jest Coverage Differ
 // @namespace    http://tampermonkey.net/
-// @version      2024-08-05
-// @description  为本地Jest测试报告生成对比数据
+// @version      2024-08-25
+// @description  为本地/线上Jest测试报告生成对比数据
 // @author       leonardoyhl
 // @match        */lcov-report/*
 // @match        */coverage/lcov-report/*
 // @match        https://check-web-node.sit.kucoin.net/test/*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=jestjs.io
-// @updateURL    https://github.com/leonardoyhl/tools/raw/main/tampermonkey/jest-coverage-differ.user.js
-// @downloadURL  https://github.com/leonardoyhl/tools/raw/main/tampermonkey/jest-coverage-differ.user.js
+// @updateURL    https://bitbucket.kucoin.net/users/herin.yao_kupotech.com/repos/tools/raw/tampermonkey/jest-coverage-differ.user.js
+// @downloadURL  https://bitbucket.kucoin.net/users/herin.yao_kupotech.com/repos/tools/raw/tampermonkey/jest-coverage-differ.user.js
 // @connect      check-web-node.sit.kucoin.net
 // @grant        GM_xmlhttpRequest
 // @grant        GM.xmlHttpRequest
