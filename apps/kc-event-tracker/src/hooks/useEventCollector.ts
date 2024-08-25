@@ -32,13 +32,21 @@ function decodeTrackData(str: string) {
   if (endIdx < 0 || str.length <= startIdx) return null;
   str = str.substring(startIdx, endIdx);
   str = atob(decodeURIComponent(str));
-  // str = Array.prototype.map.call(atob(str), function (c: string) {
-  //   if (c.charCodeAt(0) >= 0x00 && c.charCodeAt(0) <= 0xff) {
-  //     return '%' + ('00' + (c.charCodeAt(0).toString(16).toUpperCase())).slice(-2);
-  //   }
-  //   return c;
-  // }).join('');
-  // str = decodeURIComponent(str);
+  str = Array.prototype.map.call(str, function (c: string) {
+    const code = c.charCodeAt(0);
+    // encodeURIComponent不会编码的ASCII: 33, 39~42, 45-46,48~57, 65~90, 95, 97~122, 126
+    if (
+      [33, 45, 46, 95, 126].includes(code)
+      || code >= 39 && code <= 42
+      || code >= 48 && code <= 57
+      || code >= 65 && code <= 90
+      || code >= 97 && code <= 122
+    ) {
+      return c;
+    }
+    return '%' + ('00' + code.toString(16)).slice(-2);
+  }).join('');
+  str = decodeURIComponent(str);
   return JSON.parse(str);
 }
 
