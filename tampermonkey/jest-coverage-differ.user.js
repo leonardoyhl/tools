@@ -62,6 +62,36 @@
         });
     }
 
+    function listenHistoryChange(callback) {
+        const { pushState, replaceState } = history;
+        let lastPath = location.pathname;
+        history.pushState = function () {
+            pushState.apply(history, arguments);
+            const newUrl = arguments[2];
+            const newPath = newUrl.substring(0, newUrl.indexOf('#') > 0 ? newUrl.indexOf('#') : newUrl.length);
+            if (newPath !== lastPath) {
+                callback();
+            }
+            lastPath = newPath;
+        }
+        history.replaceState = function () {
+            replaceState.apply(history, arguments);
+            const newUrl = arguments[2];
+            const newPath = newUrl.substring(0, newUrl.indexOf('#') > 0 ? newUrl.indexOf('#') : newUrl.length);
+            if (newPath !== lastPath) {
+                callback();
+            }
+            lastPath = newPath;
+        }
+        window.addEventListener('popstate', (e) => {
+            const newPath = location.pathname;
+            if (newPath !== lastPath) {
+                callback();
+            }
+            lastPath = newPath;
+        });
+    }
+
     function getBaseInfo() {
         if (isOnlineSite()) {
             const text = document.querySelector('.pad1 p .quiet')?.parentElement?.innerText || '';
@@ -104,11 +134,23 @@
         // 覆盖率下降标红，否则标绿
         const color = pctDiff < 0 ? '#c21f39' : '#4d9221';
         const pctDiffText = pctDiff <= 0 ? pctDiff.toFixed(2) : `+${pctDiff.toFixed(2)}`;
-        el.firstElementChild.insertAdjacentHTML('afterend', `<span class="strong" style="color: ${color};">(${coverage.pct}%, ${pctDiffText}%)</span>`);
-        el.lastElementChild.insertAdjacentHTML('afterend', `<span class="fraction" style="color: ${color}; margin-left: 2px;">(${coverage.covered}/${coverage.total})</span>`);
+        el.firstElementChild.insertAdjacentHTML('afterend', `<span class="strong differ" style="color: ${color};">(${coverage.pct}%, ${pctDiffText}%)</span>`);
+        el.lastElementChild.insertAdjacentHTML('afterend', `<span class="fraction differ" style="color: ${color}; margin-left: 2px;">(${coverage.covered}/${coverage.total})</span>`);
     }
 
-    function addSummaryDiffInfo(coverage) {
+    function getBasePath() {
+        if (isOnlineSite()) {
+            const els = Array.from(document.querySelectorAll('.pad1 h2 a'));
+            return els.length > 1 ? els[1].nextElementSibling.innerText.trim() : '';
+        }
+        const el = document.querySelector('.pad1 h1 a');
+        return el ? el.nextSibling?.textContent?.trim() || '' : '';
+    }
+
+    function addSummaryDiffInfo(coverage, coverage_detail) {
+        const basePath = getBasePath();
+        coverage = !basePath ? coverage : coverage_detail[basePath];
+        if (!coverage) return;
         // const summaryEl = document.querySelector('.pad1 .clearfix');
         // const [statementEl, branchEl, functionEl, lineEl] = Array.from(document.querySelectorAll('.pad1 .clearfix .fl'));
         // const coverageEls = Array.from(document.querySelectorAll('.pad1 .clearfix .fl'));
@@ -122,6 +164,58 @@
             let coverageType = item.querySelector('.quiet').innerText.trim();
             coverageType = coverageType.substring(0, 1).toLowerCase() + coverageType.substring(1);
             addDiffInfo(item, coverage[coverageType]);
+        });
+    }
+
+    function addFileDiffInfo(cols, colIdxMap, coverage) {
+        ['Statements', 'Branches', 'Functions', 'Lines'].forEach(coverageType => {
+            const lcoverageType = coverageType.substring(0, 1).toLowerCase() + coverageType.substring(1);
+            if (!coverage[lcoverageType]) return;
+            addColDiffInfo(cols[colIdxMap[coverageType]], coverage[lcoverageType]);
+        });
+    }
+
+    function addColDiffInfo(col, coverage) {
+        const pct = Number(col.innerText.trim().substring(0, col.innerText.trim().length - 1));
+        const pctDiff = pct - coverage.pct;
+        if (pctDiff === 0) return;
+        // 覆盖率下降标红，否则标绿
+        const color = pctDiff < 0 ? '#c21f39' : '#4d9221';
+        const pctDiffText = pctDiff <= 0 ? pctDiff.toFixed(2) : `+${pctDiff.toFixed(2)}`;
+        col.insertAdjacentHTML('beforeend', `<span class="strong differ" style="color: ${color}; margin-left: 2px;"><br />(${coverage.pct}%, ${pctDiffText}%)</span>`);
+    }
+
+    function addDetailDiffInfo(coverage_detail) {
+        const thCols = Array.from(document.querySelectorAll('.coverage-summary thead th'));
+        const colIdxMap = thCols.reduce((acc, th, idx) => {
+            const name = th.innerText.trim();
+            if (name) {
+                acc[name] = idx;
+            }
+            return acc;
+        }, {});
+        const basePath = getBasePath();
+        const rows = Array.from(document.querySelectorAll('.coverage-summary tbody tr'));
+        rows.forEach(row => {
+            const cols = row.querySelectorAll('td');
+            const fileCol = cols[colIdxMap['File']];
+            // const statementPctCol = cols[colIdxMap['Statements']];
+            // const branchPctCol = cols[colIdxMap['Branches']];
+            // const functionPctCol = cols[colIdxMap['Functions']];
+            // const linePctCol = cols[colIdxMap['Lines']];
+            const subPath = fileCol.innerText.trim();
+            // const path = !basePath ? fileCol.innerText.trim() : `${basePath}/${fileCol.innerText.trim()}`;
+            // const coverage = coverage_detail[path];
+            const coverage = !basePath ? coverage_detail[subPath] : coverage_detail[basePath]?.childs?.find(item => {
+                // const pathes = Object.entries(item).find(([key, value]) => key === subPath);
+                return Object.keys(item).some(key => key === subPath);
+            })?.[subPath];
+            if (!coverage) return;
+            // const statementPct = Number(statementPctCol.innerText.trim().substring(0, statementPctCol.innerText.trim().length - 1));
+            // const branchPct = Number(branchPctCol.innerText.trim().substring(0, branchPctCol.innerText.trim().length - 1));
+            // const functionPct = Number(functionPctCol.innerText.trim().substring(0, functionPctCol.innerText.trim().length - 1));
+            // const linePct = Number(linePctCol.innerText.trim().substring(0, linePctCol.innerText.trim().length - 1));
+            addFileDiffInfo(cols, colIdxMap, coverage);
         });
     }
 
@@ -140,6 +234,14 @@
     const titleEl = document.querySelector('.pad1 h1');
     if (isOnlineSite()) {
         await waitForSelector('.pad1 .clearfix .fl');
+        listenHistoryChange(() => {
+            Array.from(document.querySelectorAll('.differ')).forEach(el => el.remove());
+            setTimeout(() => {
+                addSummaryDiffInfo(coverage, coverage_detail);
+                addDetailDiffInfo(coverage_detail);
+            }, 100);
+        });
     }
-    addSummaryDiffInfo(coverage);
+    addSummaryDiffInfo(coverage, coverage_detail);
+    addDetailDiffInfo(coverage_detail);
 })();
