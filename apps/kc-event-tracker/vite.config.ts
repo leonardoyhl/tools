@@ -40,7 +40,7 @@ export default defineConfig({
         // fileName: 'kc-event-tracker.user.js',
         externalGlobals: {
           preact: cdn.jsdelivr('preact', 'dist/preact.min.js'),
-          'preact/hooks': cdn.jsdelivr('preact', 'hooks/dist/hooks.umd.js'),
+          // 'preact/hooks': cdn.jsdelivr('preact', 'hooks/dist/hooks.umd.js'),
         },
         // autoGrant: true,
       },
