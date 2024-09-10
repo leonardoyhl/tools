@@ -154,7 +154,12 @@
             return els.length > 1 ? els[1].nextElementSibling.innerText.trim() : '';
         }
         const el = document.querySelector('.pad1 h1 a');
-        return el ? el.nextSibling?.textContent?.trim() || '' : '';
+        let path = el ? el.nextSibling?.textContent?.trim() || '' : '';
+        // 兼容 platform-operation-web 报告无 src/ 路径的case
+        if (path && !path.startsWith('src/')) {
+            path = 'src/' + path;
+        }
+        return path;
     }
 
     function addSummaryDiffInfo(coverage, coverage_detail) {
@@ -194,7 +199,11 @@
         rows.forEach(row => {
             const cols = row.querySelectorAll('td');
             const fileCol = cols[colIdxMap['File']];
-            const subPath = fileCol.innerText.trim();
+            let subPath = fileCol.innerText.trim();
+            // 兼容 platform-operation-web 报告无 src/ 路径的case
+            if (!basePath && !subPath.startsWith('src/')) {
+                subPath = 'src/' + subPath;
+            }
             const coverage = !basePath ? coverage_detail[subPath] : coverage_detail[basePath]?.childs?.find(item => {
                 return Object.keys(item).some(key => key === subPath);
             })?.[subPath];
