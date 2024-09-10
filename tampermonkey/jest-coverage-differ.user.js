@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Jest Coverage Differ
 // @namespace    http://tampermonkey.net/
-// @version      2024-08-25
+// @version      2024-09-10
 // @description  为本地/线上Jest测试报告生成对比数据
 // @author       leonardoyhl
 // @match        */lcov-report/*
