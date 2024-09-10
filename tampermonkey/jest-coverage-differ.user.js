@@ -18,6 +18,7 @@
 /**
  * Features:
  * 1. 为本地Jest测试报告生成对比数据
+ * 2. 为线上Jest测试报告生成对比数据
  */
 (async function () {
     'use strict';
@@ -102,13 +103,19 @@
         });
     }
 
-    function getBaseInfo() {
+    async function getBaseInfo() {
         if (isOnlineSite()) {
+            await waitForSelector('.pad1 h2 .quiet');
+            const hasBasePath = !!document.querySelector('.pad1 h2 a');
+            const atext = document.querySelector('.pad1 h2 a')?.innerText?.trim() || '';
+            const project = hasBasePath
+                ? atext.substring(0, atext.length - 1)
+                : document.querySelector('.pad1 h2 .quiet')?.innerText?.trim() || '';
             const text = document.querySelector('.pad1 p .quiet')?.parentElement?.innerText || '';
-            const matchResult = text.match(/Project\:\s*(.+)Branch\:\s*(.+)/);
-            if (!matchResult) return { project: text.trim(), branch: null };
-            const [_, project, branch] = matchResult;
-            return { project: project.trim(), branch: branch.trim() };
+            const matchResult = text.match(/Branch\:\s*(.+)/);
+            if (!matchResult) return { project, branch: null };
+            const [_, branch] = matchResult;
+            return { project, branch: branch.trim() };
         }
         const project = localStorage.getItem('project') || projects[0];
         return { project, branch: null };
@@ -150,8 +157,9 @@
 
     function getBasePath() {
         if (isOnlineSite()) {
-            const els = Array.from(document.querySelectorAll('.pad1 h2 a'));
-            return els.length > 1 ? els[1].nextElementSibling.innerText.trim() : '';
+            const hasBasePath = !!document.querySelector('.pad1 h2 a');
+            const basePath = hasBasePath ? document.querySelector('.pad1 h2 .quiet')?.innerText?.trim() || '' : '';
+            return basePath;
         }
         const el = document.querySelector('.pad1 h1 a');
         let path = el ? el.nextSibling?.textContent?.trim() || '' : '';
@@ -215,7 +223,7 @@
         });
     }
 
-    const { project, branch } = getBaseInfo();
+    const { project, branch } = await getBaseInfo();
     if (isOnlineSite()) {
         // 线上 master 分支覆盖率页面不需要生成对比数据
         if (branch === 'master') return;
