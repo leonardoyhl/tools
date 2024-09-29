@@ -12,7 +12,7 @@
 // @match        https://www.kucoin.plus/*
 // @match        https://*.dev.kucoin.net/*
 // @match        https://*.sit.kucoin.net/*
-// @run-at       document-body
+// @run-at       document-start
 // @grant        none
 // ==/UserScript==
 
@@ -34,9 +34,13 @@
             console.warn('KuCoin Env: url', url);
             if (url.match(patterns.apiColoring)) {
                 const data = await cloned.json();
-                updateEnv({ gray: data.data });
+                const { projectVersions } = env;
+                delete env.projectVersions;
+                // 保证当前灰度信息在前
+                updateEnv({ gray: data.data, projectVersions: projectVersions });
             } else if (url.match(patterns.importMap)) {
-                const result = patterns.importMap.exec(url);
+                const path = URL.canParse(url) ? new URL(url).pathname : url;
+                const result = patterns.importMap.exec(path);
                 if (result) {
                     const project = result[1];
                     const data = await cloned.json();
@@ -55,60 +59,17 @@
      * @property {string} ssgTime
      * @property {"light" | "dark"} ssgTheme
      * @property {boolean} gUseSSG
+     * @property {string} natashaVersion
      * @property {Object} gray
      * @property {Object} projectVersions
      */
 
-    // 提取SSG注释标识
-    const headSSGMark = /\-\-.*\[SSG\].*at\s*(.*)\s*\-\-/.exec(document.head.innerHTML);
-    let ssgTime;
-    if (!!headSSGMark) {
-        const ssgTimeStr = headSSGMark[1]?.trim();
-        ssgTime = !!ssgTimeStr ? new Date(ssgTimeStr).toLocaleString() : undefined;
-    }
-    // 提取HTML中的版本信息
-    const projectVersions = Array.from(document.querySelectorAll('[data-importmap-ssg]')).reduce((acc, item) => {
-        const project = item.getAttribute('data-importmap-ssg');
-        const importMap = JSON.parse(item.innerText);
-        acc[project] = importMap;
-        return acc;
-    }, {});
-
     /**
      * @type {Env}
      */
-    const env = {
-        useSSG: window._useSSG || !!headSSGMark,
-        ssgTime,
-        isMobileSSG: window.SSG_isMobile,
-        isAppSSG: window.SSG_isApp,
-        ssgTheme: window.SSG_theme,
-        gUseSSG: window.g_useSSR || false,
-        projectVersions,
-    };
-
-    const host = document.createElement('div');
-    host.style.display = 'block';
-    host.style.position = 'fixed';
-    host.style.zIndex = 100;
-    host.style.top = '8px';
-    host.style.left = '8px';
-    host.style.backgroundColor = '#fff';
-    const btnSwitch = document.createElement('span');
-    btnSwitch.innerText = 'KC Env';
-    btnSwitch.style.padding = '2px 4px';
-    btnSwitch.style.backgroundColor = '#01bc8d';
-    btnSwitch.style.cursor = 'pointer';
-    btnSwitch.onclick = () => {
-        pre.style.display = pre.style.display === 'none' ? 'block' : 'none';
-    };
-    host.appendChild(btnSwitch);
-    const pre = document.createElement('pre');
-    pre.innerText = JSON.stringify(env, null, 4);
-    pre.style.display = 'none';
-    pre.style.backgroundColor = '#efefef';
-    host.appendChild(pre);
-    document.body.appendChild(host);
+    let env = {};
+    /** @type {HTMLPreElement} */
+    let pre;
 
     /**
      * @param {Env} info 
@@ -117,7 +78,9 @@
         Object.assign(env, info);
         // trigger env change
         console.warn('KuCoin Env:', env);
-        pre.innerText = JSON.stringify(env, null, 4);
+        if (pre) {
+            pre.innerText = JSON.stringify(env, null, 4);
+        }
     }
 
     function updateProjectVersion(project, info) {
@@ -128,4 +91,69 @@
             },
         });
     }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        // 提取SSG注释标识
+        const headSSGMark = /\-\-.*\[SSG\].*at\s*(.*)\s*\-\-/.exec(document.head.innerHTML);
+        let ssgTime;
+        if (!!headSSGMark) {
+            const ssgTimeStr = headSSGMark[1]?.trim();
+            ssgTime = !!ssgTimeStr ? new Date(ssgTimeStr).toLocaleString() : undefined;
+        }
+        // 提取HTML中的版本信息
+        const projectVersions = Array.from(document.querySelectorAll('[data-importmap-ssg]')).reduce((acc, item) => {
+            const project = item.getAttribute('data-importmap-ssg');
+            const importMap = JSON.parse(item.innerText);
+            acc[project] = importMap;
+            return acc;
+        }, {});
+
+        env = {
+            useSSG: window._useSSG || !!headSSGMark,
+            ssgTime,
+            isMobileSSG: window.SSG_isMobile,
+            isAppSSG: window.SSG_isApp,
+            ssgTheme: window.SSG_theme,
+            gUseSSG: window.g_useSSR || false,
+            natashaVersion: window._natasha_version_,
+            ...env,
+            projectVersions: {
+                ...projectVersions, // 保证当前主项目信息在前
+                ...env.projectVersions,
+            },
+        };
+
+        const host = document.createElement('div');
+        host.style.display = 'block';
+        host.style.position = 'fixed';
+        host.style.zIndex = 10000;
+        host.style.top = '8px';
+        host.style.left = '8px';
+        host.style.color = '#000';
+        host.style.backgroundColor = '#fff';
+        host.onmouseenter = () => {
+            pre.style.display = pre.style.display === 'none' ? 'block' : 'none';
+        };
+        host.onmouseleave = () => {
+            pre.style.display = pre.style.display === 'none' ? 'block' : 'none';
+        };
+        const btnSwitch = document.createElement('span');
+        btnSwitch.innerText = 'KC Env';
+        btnSwitch.style.padding = '2px 4px';
+        btnSwitch.style.backgroundColor = '#01bc8d';
+        btnSwitch.style.cursor = 'pointer';
+        btnSwitch.ontouchend = () => {
+            pre.style.display = pre.style.display === 'none' ? 'block' : 'none';
+        };
+        host.appendChild(btnSwitch);
+        pre = document.createElement('pre');
+        pre.innerText = JSON.stringify(env, null, 4);
+        pre.style.display = 'none';
+        pre.style.maxWidth = 'calc(100vw - 16px)';
+        pre.style.maxHeight = '70vh';
+        pre.style.overflow = 'auto';
+        pre.style.backgroundColor = '#efefef';
+        host.appendChild(pre);
+        document.body.appendChild(host);
+    });
 })();
