@@ -20,15 +20,10 @@
     'use strict';
 
     const _fetch = window.fetch;
-    const _XMLHttpRequest = window.XMLHttpRequest;
 
     const patterns = {
         apiColoring: new RegExp('/_api/anonymous/coloring'),
         importMap: new RegExp('/(.*)/.*import-map\\.json', 'i'),
-        // importMap: /\/(.*)\/.*import-map\.json$/i,
-        // importMapMarketingGrowthWeb: new RegExp('/marketing-growth-web/import-map.json'),
-        // importMapBaseWeb: new RegExp('/kucoin-base-web/import-map.json'),
-        // importMapGBiz: new RegExp('/g-biz/gbiz-import-map.json'),
     };
 
     window.fetch = async function rewritedFetch(input, init, ...rest) {
@@ -39,7 +34,6 @@
             console.warn('KuCoin Env: url', url);
             if (url.match(patterns.apiColoring)) {
                 const data = await cloned.json();
-                // env.coloring = data.data;
                 updateEnv({ gray: data.data });
             } else if (url.match(patterns.importMap)) {
                 const result = patterns.importMap.exec(url);
@@ -47,7 +41,6 @@
                     const project = result[1];
                     const data = await cloned.json();
                     updateProjectVersion(project, data);
-                    // updateProjectVersion('marketing-growth-web', data);
                 }
             }
         }
@@ -85,16 +78,12 @@
      * @type {Env}
      */
     const env = {
-        // useSSG: window._useSSG || false,
-        // isMobileSSG: window.SSG_isMobile || false,
-        // isAppSSG: window.SSG_isApp || false,
         useSSG: window._useSSG || !!headSSGMark,
         ssgTime,
         isMobileSSG: window.SSG_isMobile,
         isAppSSG: window.SSG_isApp,
         ssgTheme: window.SSG_theme,
         gUseSSG: window.g_useSSR || false,
-        // projectVersions: {},
         projectVersions,
     };
 
@@ -121,8 +110,6 @@
     host.appendChild(pre);
     document.body.appendChild(host);
 
-    // collectEnvInfoFromHtml();
-
     /**
      * @param {Env} info 
      */
@@ -139,25 +126,6 @@
                 ...env.projectVersions,
                 [project]: info,
             },
-        });
-    }
-
-    function collectEnvInfoFromHtml() {
-        // 提取SSG注释标识
-        const headSSGMark = /\-\-.*\[SSG\].*at\s*(.*)\s*\-\-/.exec(document.head.innerHTML);
-        if (!!headSSGMark) {
-            const ssgTimeStr = headSSGMark[1]?.trim();
-            const ssgTime = !!ssgTimeStr ? new Date(ssgTimeStr).toLocaleString() : undefined;
-            updateEnv({
-                useSSG: true,
-                ssgTime,
-            });
-        }
-        // 提取HTML中的版本信息
-        Array.from(document.querySelectorAll('[data-importmap-ssg]')).forEach(item => {
-            const project = item.getAttribute('data-importmap-ssg');
-            const importMap = JSON.parse(item.innerText);
-            updateProjectVersion(project, importMap);
         });
     }
 })();
