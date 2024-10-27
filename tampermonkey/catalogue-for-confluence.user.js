@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Catalogue for Confluence
 // @namespace    http://tampermonkey.net/
-// @version      2024-08-15
+// @version      2024-09-24
 // @description  为 Confluence 文档生成目录
 // @author       leonardoyhl
 // @match        https://*.atlassian.net/wiki/*
@@ -28,6 +28,20 @@
         collapse: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTgiIGhlaWdodD0iMTgiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHBhdGggZD0iTTcuOTg3IDEzLjIyOEwzLjc2IDlsNC40NTctNC40NTguNjI3LS42M0EuNzUuNzUgMCAxMDcuNzggMi44NThsLS40OTguNUwyLjE3IDguNDdhLjc1Ljc1IDAgMDAwIDEuMDZsNC44NTQgNC44NTUuNzU5Ljc2YS43NS43NSAwIDAwMS4wNjItMS4wNTdsLS44NTctLjg2eiIgZmlsbD0iIzY0NkE3MyIvPjxwYXRoIGQ9Ik0xNC42NjggMTMuMjI4TDEwLjQ0IDlsNC40NTctNC40NTguNjI3LS42M2EuNzUuNzUgMCAxMC0xLjA2NC0xLjA1NmwtLjQ5OC41TDguODUgOC40N2EuNzUuNzUgMCAwMDAgMS4wNmw0Ljg1NCA0Ljg1NS43NTguNzZhLjc1Ljc1IDAgMDAxLjA2Mi0xLjA1N2wtLjg1Ni0uODZ6IiBmaWxsPSIjNjQ2QTczIi8+PC9zdmc+',
         expand: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTgiIGhlaWdodD0iMTgiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHBhdGggZmlsbC1ydWxlPSJldmVub2RkIiBjbGlwLXJ1bGU9ImV2ZW5vZGQiIGQ9Ik0xLjUgMy4zNzVjMC0uMjA3LjE2OC0uMzc1LjM3NS0uMzc1aDE0LjI1Yy4yMDcgMCAuMzc1LjE2OC4zNzUuMzc1di43NWEuMzc1LjM3NSAwIDAxLS4zNzUuMzc1SDEuODc1YS4zNzUuMzc1IDAgMDEtLjM3NS0uMzc1di0uNzV6bTAgNS4yNWMwLS4yMDcuMTY4LS4zNzUuMzc1LS4zNzVoMTQuMjVjLjIwNyAwIC4zNzUuMTY4LjM3NS4zNzV2Ljc1YS4zNzUuMzc1IDAgMDEtLjM3NS4zNzVIMS44NzVhLjM3NS4zNzUgMCAwMS0uMzc1LS4zNzV2LS43NXptLjM3NSA0Ljg3NWEuMzc1LjM3NSAwIDAwLS4zNzUuMzc1di43NWMwIC4yMDcuMTY4LjM3NS4zNzUuMzc1aDkuNzVhLjM3NS4zNzUgMCAwMC4zNzUtLjM3NXYtLjc1YS4zNzUuMzc1IDAgMDAtLjM3NS0uMzc1aC05Ljc1eiIgZmlsbD0iIzY0NkE3MyIvPjwvc3ZnPg==',
     };
+
+    function waitForSelector(selector) {
+        return new Promise((resolve, reject) => {
+            const el = document.querySelector(selector);
+            if (!!el) return resolve();
+            const timerId = setInterval(() => {
+                const el = document.querySelector(selector);
+                if (!!el) {
+                    resolve();
+                    clearInterval(timerId);
+                }
+            }, 1000);
+        });
+    }
 
     function applyStyle(style) {
         const el = document.createElement('style');
@@ -66,7 +80,7 @@
             .catalogue.collapsed.visible .catalogue-inner {
                 background-color: #fff;
             }
-            
+
             .catalogue-icon {
                 display: inline-block;
                 width: 18px;
@@ -86,7 +100,7 @@
             .catalogue.collapsed .catalogue-icon.expand {
                 display: inline-block;
             }
-            
+
             .catalogue-list {
                 padding: 0;
             }
@@ -99,7 +113,7 @@
             .catalogue.collapsed.visible .catalogue-list {
                 display: block;
             }
-            
+
             .catalogue-item {
                 margin-bottom: 8px;
                 list-style-type: none;
@@ -130,12 +144,7 @@
             || !isInReadMode() && !document.querySelector('.ak-editor-content-area');
     }
 
-    function createCatalogue() {
-        if (document.querySelector('.catalogue')) {
-            console.log('Catalogue: catalogue existed');
-            return;
-        }
-        console.log('Catalogue: creating catalogue');
+    function getCatalogueData() {
         const isReadMode = isInReadMode();
         const title = isReadMode ? document.querySelector('#title-text').innerText : document.querySelector('textarea').value;
         const contentEl = isReadMode ? document.querySelector('#content') : document.querySelector('#ak-editor-textarea');
@@ -149,6 +158,28 @@
                 level: Number(heading.tagName.substring(1)),
             };
         });
+        return {
+            title,
+            headings,
+        };
+    }
+
+    function diffCatalogueData(prev, next) {
+        if (next.title !== prev.title) return true;
+        if (next.headings.length !== prev.headings.length) return true;
+        return next.headings.some((item, idx) => {
+            const oldItem = prev.headings[idx];
+            return item.text !== oldItem.text || item.level !== oldItem.level;
+        });
+    }
+
+    function createCatalogue() {
+        if (document.querySelector('.catalogue')) {
+            console.log('Catalogue: catalogue existed');
+            return;
+        }
+        console.log('Catalogue: creating catalogue');
+        const { title, headings } = getCatalogueData();
         const allLevels = headings.map(item => item.level).filter((item, idx, arr) => arr.indexOf(item) === idx).sort((a, b) => a - b);
         const titleFragment = `<li class="catalogue-item catalogue-item-title indent-level-0"><a href="#">${title}</a></li>`;
         const itemFragments = [titleFragment, ...headings.map(item => {
@@ -225,15 +256,29 @@
     applyCatalogueStyle();
 
     // 页面加载完成后生成目录
-    document.addEventListener('readystatechange', (e) => {
-        console.log('Catalogue: readystatechange', e);
-        if (document.readyState === 'complete') {
-            // 在页面加载完成前，若点击空间文档目录树跳转至新页面（通过history），会尝试生成新文档的目录
-            // 当这里触发时机较晚时，实际上目录已生成，故仅当没有时生成
+    waitForSelector('#title-text, textarea').then(() => {
+        // 在页面加载完成前，若点击空间文档目录树跳转至新页面（通过history），会尝试生成新文档的目录
+        // 当这里触发时机较晚时，实际上目录已生成，故仅当没有时生成
+        if (!document.querySelector('.catalogue')) {
+            createCatalogue();
+        }
+        // 监听DOM变更，实现 编辑态 实时更新目录
+        const contentBodyEl = document.querySelector('body');
+        let prevCatalogueData = getCatalogueData();
+        const observer = new MutationObserver(mutations => {
             if (!document.querySelector('.catalogue')) {
                 createCatalogue();
+                return;
             }
-        }
+            const currentCatalogueData = getCatalogueData();
+            const changed = diffCatalogueData(prevCatalogueData, currentCatalogueData);
+            if (changed) {
+                removeCatalogue();
+                createCatalogue();
+            }
+            prevCatalogueData = currentCatalogueData;
+        });
+        contentBodyEl && observer.observe(contentBodyEl, { childList: true, subtree: true });
     });
     // 路由切换时重新生成目录
     listenHistoryChange(() => {
