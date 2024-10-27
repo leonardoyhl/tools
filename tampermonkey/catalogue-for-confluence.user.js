@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Catalogue for Confluence
 // @namespace    http://tampermonkey.net/
-// @version      2024-09-24
+// @version      2024-10-27
 // @description  为 Confluence 文档生成目录
 // @author       leonardoyhl
 // @match        https://*.atlassian.net/wiki/*
@@ -173,7 +173,7 @@
         });
     }
 
-    function createCatalogue() {
+    function createCatalogue(collapsed) {
         if (document.querySelector('.catalogue')) {
             console.log('Catalogue: catalogue existed');
             return;
@@ -194,7 +194,7 @@
 
         const catalogueEl = document.querySelector('.catalogue');
         // 老版本编辑器内容居左而非居中、全宽模式，没有空白区域用于展示目录，故默认折叠
-        if (isOldEditor() || isFullWidthMdoe()) {
+        if (isOldEditor() || isFullWidthMdoe() || collapsed) {
             catalogueEl.classList.add('collapsed');
         }
         if (!isInReadMode()) {
@@ -273,8 +273,9 @@
             const currentCatalogueData = getCatalogueData();
             const changed = diffCatalogueData(prevCatalogueData, currentCatalogueData);
             if (changed) {
+                const collapsed = !!document.querySelector('.catalogue.collapsed');
                 removeCatalogue();
-                createCatalogue();
+                createCatalogue(collapsed);
             }
             prevCatalogueData = currentCatalogueData;
         });
