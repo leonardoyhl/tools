@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Catalogue for Confluence
 // @namespace    http://tampermonkey.net/
-// @version      2024-10-27
+// @version      2024-10-29
 // @description  为 Confluence 文档生成目录
 // @author       leonardoyhl
 // @match        https://*.atlassian.net/wiki/*
@@ -169,7 +169,7 @@
         if (next.headings.length !== prev.headings.length) return true;
         return next.headings.some((item, idx) => {
             const oldItem = prev.headings[idx];
-            return item.text !== oldItem.text || item.level !== oldItem.level;
+            return item.id !== oldItem.id || item.text !== oldItem.text || item.level !== oldItem.level;
         });
     }
 
