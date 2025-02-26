@@ -28,6 +28,9 @@ export default function EventItemView(props: EventItemViewProps) {
         <span class="col event">
           <HighlightSearchText text={item.event} search={category} />
         </span>{' '}
+        <span class="col app_name">
+          <HighlightSearchText text={item.properties?.app_name} search={''} />
+        </span>{' '}
         <span class="col page_id">
           <HighlightSearchText text={item.properties?.page_id} search={pageId} />
         </span>{' '}

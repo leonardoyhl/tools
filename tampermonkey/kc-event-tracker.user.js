@@ -212,7 +212,7 @@
     return /* @__PURE__ */ u$1(preact.Fragment, { children: fragments.map(([item, matched], idx) => matched ? /* @__PURE__ */ u$1("span", { class: "highlight", children: item }, idx) : item) });
   }
   function EventItemView(props) {
-    var _a, _b;
+    var _a, _b, _c;
     const { data: item, type, category, pageId, spmId } = props;
     const [expanded, setExpanded] = p(false);
     return /* @__PURE__ */ u$1("div", { class: "kcet-event-item", children: [
@@ -226,9 +226,11 @@
         " ",
         /* @__PURE__ */ u$1("span", { class: "col event", children: /* @__PURE__ */ u$1(HighlightSearchText, { text: item.event, search: category }) }),
         " ",
-        /* @__PURE__ */ u$1("span", { class: "col page_id", children: /* @__PURE__ */ u$1(HighlightSearchText, { text: (_a = item.properties) == null ? void 0 : _a.page_id, search: pageId }) }),
+        /* @__PURE__ */ u$1("span", { class: "col app_name", children: /* @__PURE__ */ u$1(HighlightSearchText, { text: (_a = item.properties) == null ? void 0 : _a.app_name, search: "" }) }),
         " ",
-        /* @__PURE__ */ u$1("span", { class: "col spm_id", children: /* @__PURE__ */ u$1(HighlightSearchText, { text: (_b = item.properties) == null ? void 0 : _b.spm_id, search: spmId }) }),
+        /* @__PURE__ */ u$1("span", { class: "col page_id", children: /* @__PURE__ */ u$1(HighlightSearchText, { text: (_b = item.properties) == null ? void 0 : _b.page_id, search: pageId }) }),
+        " ",
+        /* @__PURE__ */ u$1("span", { class: "col spm_id", children: /* @__PURE__ */ u$1(HighlightSearchText, { text: (_c = item.properties) == null ? void 0 : _c.spm_id, search: spmId }) }),
         !expanded ? /* @__PURE__ */ u$1(IconExpand, {}) : /* @__PURE__ */ u$1(IconCollapse, {})
       ] }),
       expanded && /* @__PURE__ */ u$1("div", { class: "detail", children: /* @__PURE__ */ u$1("pre", { children: JSON.stringify(item, null, 4) }) })
